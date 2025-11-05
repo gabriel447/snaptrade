@@ -14,22 +14,27 @@ app.use(helmet());
 app.use(express.json({ limit: process.env.REQUEST_LIMIT || '6mb' }));
 app.use(httpLogger);
 
-// Rate limit básico por IP
-const limiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: Number(process.env.RATE_LIMIT_MAX || 60),
+// Rate limit por token (RPS)
+const tokenLimiter = rateLimit({
+  windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 1000), // 1 segundo
+  max: Number(process.env.RATE_LIMIT_RPS || 5), // requisições por segundo por token
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    const auth = req.headers.authorization || '';
+    if (auth.startsWith('Bearer ')) {
+      return auth.substring('Bearer '.length).trim();
+    }
+    const xtoken = req.headers['x-api-token'];
+    return xtoken ? String(xtoken).trim() : 'NO_TOKEN';
+  },
+  message: { error: 'Limite de requisições excedido' }
 });
-app.use(limiter);
 
 // Todas as rotas exigem token
 app.use(authMiddleware);
-
-// Saúde
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', uptime: process.uptime() });
-});
+// Aplica rate limit por token após autenticação
+app.use(tokenLimiter);
 
 // Endpoint principal
 app.post('/analyze', async (req, res, next) => {

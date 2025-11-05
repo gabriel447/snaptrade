@@ -16,13 +16,10 @@ API em Node.js que recebe imagens de gráficos de candles (base64), analisa padr
 - Defina `API_TOKEN` no `.env` com um token único fixo.
 - Envie o token via `Authorization: Bearer <token>` ou header `X-API-TOKEN: <token>`.
 
-Exemplo cURL:
-```
-curl -X GET http://localhost:3000/health \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer MEU_TOKEN" \
-  
+- Se `API_TOKEN` não estiver definido, a API responde com `401 Token não configurado`.
 
+Exemplo cURL (apenas endpoint principal):
+```
 curl -X POST http://localhost:3000/analyze \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer MEU_TOKEN" \
@@ -55,4 +52,4 @@ Resposta:
 ## Observações
 - Formatos de imagem aceitos: PNG, JPEG, WEBP
 - Tamanho máximo configurável via `MAX_IMAGE_BYTES` (default 5MB)
-- Rate limit padrão: 60 req/min por IP
+- Rate limit por token: configure `RATE_LIMIT_RPS` (default 5) e `RATE_LIMIT_WINDOW_MS` (default 1000ms)
