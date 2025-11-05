@@ -11,7 +11,6 @@ const app = express();
 
 // Segurança e parsing
 app.use(helmet());
-// Captura rawBody para possíveis verificações futuras (ex.: HMAC) e mantém JSON parsing
 app.use(express.json({ limit: process.env.REQUEST_LIMIT || '6mb' }));
 app.use(httpLogger);
 
