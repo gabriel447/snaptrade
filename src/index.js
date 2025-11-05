@@ -5,11 +5,13 @@ import rateLimit from 'express-rate-limit';
 import logger, { httpLogger } from './logger.js';
 import { analyzeBodySchema, validateAndDecodeImage, openAIResultSchema } from './validators.js';
 import { getOpenAIClient, analyzeCandlesWithVision } from './openaiClient.js';
+import { authMiddleware } from './auth.js';
 
 const app = express();
 
 // Segurança e parsing
 app.use(helmet());
+// Captura rawBody para possíveis verificações futuras (ex.: HMAC) e mantém JSON parsing
 app.use(express.json({ limit: process.env.REQUEST_LIMIT || '6mb' }));
 app.use(httpLogger);
 
@@ -21,6 +23,9 @@ const limiter = rateLimit({
   legacyHeaders: false
 });
 app.use(limiter);
+
+// Todas as rotas exigem token
+app.use(authMiddleware);
 
 // Saúde
 app.get('/health', (req, res) => {
