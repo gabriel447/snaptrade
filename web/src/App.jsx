@@ -12,6 +12,8 @@ function App() {
   const progressRAF = useRef(null)
   const [showErrorModal, setShowErrorModal] = useState(false)
   const [errorFriendly, setErrorFriendly] = useState('')
+  const [showResult, setShowResult] = useState(false)
+  const [showAnalysis, setShowAnalysis] = useState(false)
 
   const apiBase = useMemo(() => import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000', [])
   const apiToken = useMemo(() => import.meta.env.VITE_API_TOKEN || '', [])
@@ -80,6 +82,7 @@ function App() {
     try {
       const [data] = await Promise.all([fetchAnalyze(), simulateProgress()])
       setResult(data)
+      setShowResult(true)
     } catch (err) {
       setError(err.message)
       setErrorFriendly('Ocorreu um erro. Tente novamente.')
@@ -89,8 +92,7 @@ function App() {
       if (progressRAF.current) cancelAnimationFrame(progressRAF.current)
       setAnalyzing(false)
       setLoading(false)
-      setFile(null)
-      setPreview(null)
+      // mantém seleção até o usuário decidir fechar o resultado
     }
   }
 
@@ -102,10 +104,30 @@ function App() {
     }
   }, [showErrorModal])
 
-  function mapSinalToAposta(sinal) {
-    if (sinal === 'COMPRAR') return 'Apostar para cima'
-    if (sinal === 'VENDER') return 'Apostar para baixo'
-    return 'Aguardar'
+  function mapTrend(sinal) {
+    if (sinal === 'COMPRAR') return 'Alta'
+    if (sinal === 'VENDER') return 'Baixa'
+    return 'Indecisa'
+  }
+
+  function mapVolatility(confianca) {
+    const c = String(confianca || '').toLowerCase()
+    if (c.includes('alta')) return 'Baixa' // alta confiança => baixa volatilidade
+    if (c.includes('baixa')) return 'Alta'
+    return 'Média'
+  }
+
+  function mapSuccessRate(confianca) {
+    const c = String(confianca || '').toLowerCase()
+    if (c.includes('alta')) return 85
+    if (c.includes('baixa')) return 55
+    return 70
+  }
+
+  function iconForSinal(sinal) {
+    if (sinal === 'COMPRAR') return '⬆️'
+    if (sinal === 'VENDER') return '⬇️'
+    return '⏳'
   }
 
   return (
@@ -116,6 +138,7 @@ function App() {
       </header>
 
       <main className="content">
+        {!showResult && (
         <section className="card upload-card">
           {!preview && (
             <>
@@ -146,34 +169,89 @@ function App() {
             </div>
           )}
         </section>
+        )}
 
-        <button className="primary" disabled={!preview || loading} onClick={handleAnalyze}>
-          {loading ? 'Analisando...' : 'Analisar Agora'}
-        </button>
+        {!showResult && (
+          <button className="primary" disabled={!preview || loading} onClick={handleAnalyze}>
+            {loading ? 'Analisando...' : 'Analisar Agora'}
+          </button>
+        )}
 
         {/* Removido erro inferior para usar apenas modal no topo */}
 
-        {result && (
-          <section className="card result">
-            <h2 className="result-title">Resultado da Análise</h2>
-            <div
-              className={
-                'result-cta ' +
-                (result.sinal === 'VENDER'
-                  ? 'sell'
-                  : result.sinal === 'COMPRAR'
-                  ? 'buy'
-                  : 'wait')
-              }
-            >
-              {result.sinal}
+        {result && showResult && (
+          <div className="overlay result-overlay">
+            <div className="result-modal">
+              <div className="result-modal-header">
+                <h2>Resultado da Análise</h2>
+                <button
+                  type="button"
+                  className="modal-close"
+                  aria-label="Fechar resultado"
+                  title="Fechar"
+                  onClick={() => { setShowResult(false); setResult(null); setFile(null); setPreview(null); }}
+                >
+                  ×
+                </button>
+              </div>
+
+              <div
+                className={
+                  'result-cta ' +
+                  (result.sinal === 'VENDER'
+                    ? 'sell'
+                    : result.sinal === 'COMPRAR'
+                    ? 'buy'
+                    : 'wait')
+                }
+              >
+                <span className="cta-icon" aria-hidden="true">{iconForSinal(result.sinal)}</span>
+                <span className="cta-text">{result.sinal}</span>
+              </div>
+
+              <div className="market-section">
+                <div className="section-title">Dados do Mercado</div>
+                <div className="info-row">
+                  <span className="icon">📈</span>
+                  <span className="label">Tendência</span>
+                  <span className="value">{mapTrend(result.sinal)}</span>
+                </div>
+                <div className="info-row">
+                  <span className="icon">⚡</span>
+                  <span className="label">Volatilidade</span>
+                  <span className="value">{mapVolatility(result.confianca)}</span>
+                </div>
+                <div className="info-row">
+                  <span className="icon">🎯</span>
+                  <span className="label">Taxa de Sucesso</span>
+                  <span className="value success">{mapSuccessRate(result.confianca)}%</span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="accordion-toggle"
+                onClick={() => setShowAnalysis((v) => !v)}
+                aria-expanded={showAnalysis}
+                aria-label="Análise Completa"
+                title="Análise Completa"
+              >
+                <span className="accordion-text">Análise Completa</span>
+                <span className={"chevron-icon " + (showAnalysis ? 'open' : 'closed')} aria-hidden="true">
+                  <svg className="chevron-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </span>
+              </button>
+              {showAnalysis && (
+                <div className="result-body">
+                  <p className="result-explain">{result.explicacao}</p>
+                </div>
+              )}
+
+              {/* Botão “Nova Análise” removido conforme solicitação */}
             </div>
-            <div className="result-details">
-              <div className="detail"><span>Confiança</span><strong>{result.confianca}</strong></div>
-              <div className="detail"><span>Aposta</span><strong>{mapSinalToAposta(result.sinal)}</strong></div>
-            </div>
-            <p className="result-explain">{result.explicacao}</p>
-          </section>
+          </div>
         )}
       </main>
       {showErrorModal && (

@@ -15,16 +15,28 @@ import { authMiddleware } from './auth.js';
 
 const app = express();
 
-// Segurança e parsing
 app.use(helmet());
-const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['*'];
-app.use(cors({
-  origin: allowedOrigins,
+
+const corsOriginEnv = (process.env.CORS_ORIGIN || '').trim();
+const originList = corsOriginEnv
+  ? corsOriginEnv.split(',').map((s) => s.trim()).filter(Boolean)
+  : [];
+const allowAll = !corsOriginEnv || originList.includes('*');
+
+const corsOptions = {
+  origin: allowAll
+    ? true
+    : function (origin, callback) {
+        const isAllowed = !origin || originList.includes(origin);
+        callback(null, isAllowed);
+      },
   methods: ['POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Token'],
   optionsSuccessStatus: 204,
   preflightContinue: false
-}));
+};
+app.use(cors(corsOptions));
+app.options('/analyze', cors(corsOptions));
 app.use(express.json({ limit: process.env.REQUEST_LIMIT || '6mb' }));
 app.use(httpLogger);
 
