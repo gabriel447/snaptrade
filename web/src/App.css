@@ -18,10 +18,8 @@
 
 /* Card genérico */
 .card {
-  background: #11161c;
-  border: 1px solid #1f2937;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  border-radius: 20px;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.55);
   padding: 16px;
   width: 100%;
 }
@@ -122,9 +120,12 @@
   .primary { padding: 14px 18px; font-size: 1.1rem; }
 }
 
-/* Espaçamento entre título e seletor */
+/* Espaçamento entre título e seletor (mantém tamanho original da tela inicial) */
 .upload-card { margin-top: 0; background: transparent; border: none; box-shadow: none; padding: 0; }
 .upload-card .picker { border-radius: 12px; }
+
+/* Mantém o background do hero em todas as telas, ocultando apenas os textos */
+.hero-muted .title, .hero-muted .subtitle { opacity: 0; height: 0; margin: 0; pointer-events: none; }
 
 /* Overlay de carregamento (mantém escurecimento e cobertura total) */
 .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: grid; place-items: center; z-index: 60; }
@@ -142,12 +143,16 @@
 .progress-fill.pink { background: #fb7185; }
 .overall { margin-top: 8px; text-align: center; color: #60a5fa; font-weight: 600; }
 
+/* Card de análise inline (substitui overlay durante processamento) */
+.analyzing-card { background: #111827; border: 1px solid #1f2937; border-radius: 18px; box-shadow: 0 12px 28px rgba(0,0,0,0.35); padding: 40px 20px 40px 20px;}
+.fade-in { animation: fadeIn 240ms ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
 /* Resultado estilo destaque */
 .result-title { margin: 0 0 10px; text-align: center; }
 /* Modal de resultado */
-.result-overlay { z-index: 60; background: transparent; position: static; }
 .result-modal {
-  width: min(92vw, 560px);
+  width: min(92vw, 520px);
   background: #0f1420;
   border: 1px solid #1f2937;
   border-radius: 20px;
@@ -156,7 +161,7 @@
 }
 .result-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 4px 12px; }
 .result-modal-header h2 { margin: 0; font-size: 1.2rem; }
-.modal-close { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; color: #ffffff; font-size: 1.4rem; line-height: 1; cursor: pointer; }
+.modal-close { display: none; }
 .result-cta { margin: 8px 0 16px; width: 100%; padding: 16px; border-radius: 14px; font-size: 1.3rem; font-weight: 800; letter-spacing: 0.6px; box-shadow: 0 16px 35px rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; gap: 8px; }
 .result-cta .cta-icon { font-size: 1.4rem; line-height: 1; }
 .result-cta .cta-text { text-transform: uppercase; }
@@ -180,6 +185,7 @@
   border-radius: 12px;
   box-shadow: 0 12px 24px rgba(37,99,235,0.25);
 }
+.new-analysis:focus, .new-analysis:hover { filter: brightness(1.06); }
 
 /* Seção de dados de mercado com ícones */
 .market-section { margin: 12px 0 8px; }
@@ -207,3 +213,11 @@
 @media (max-width: 640px) {
   .result-modal { width: calc(100% - 2 * var(--gutter)); margin-inline: var(--gutter); }
 }
+/* Ajustes inline adicionais */
+.analyzing-card { width: min(92vw, 460px); min-height: 360px; margin-inline: auto; }
+.new-analysis { width: calc(100% - 24px); margin-inline: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.new-analysis-icon { display: inline-flex; width: 18px; height: 18px; }
+.accordion-text { font-size: 0.95rem; }
+.content-middle { padding-top: 20vh; }
+.content-top { padding-top: 80px; }
+.analyzing-card { background: #0f1420; border: 1px solid #1f2937; border-radius: 20px; }

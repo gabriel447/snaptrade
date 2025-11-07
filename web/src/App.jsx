@@ -132,14 +132,14 @@ function App() {
 
   return (
     <div className="page">
-      <header className="hero">
+      <header className={"hero " + ((analyzing || showResult) ? 'hero-muted' : '')}>
         <h1 className="title">SnapTrade</h1>
         <p className="subtitle">Envie seu gráfico para análise</p>
       </header>
 
-      <main className="content">
-        {!showResult && (
-        <section className="card upload-card">
+      <main className={"content " + (analyzing ? 'content-middle' : (showResult ? 'content-top' : ''))}>
+        {!showResult && !analyzing && (
+        <section className="card upload-card fade-in">
           {!preview && (
             <>
               <input id="fileInput" className="file-input" type="file" accept="image/*" onChange={onFileChange} />
@@ -171,29 +171,19 @@ function App() {
         </section>
         )}
 
-        {!showResult && (
+        {!showResult && !analyzing && (
           <button className="primary" disabled={!preview || loading} onClick={handleAnalyze}>
-            {loading ? 'Analisando...' : 'Analisar Agora'}
+            Analisar Agora
           </button>
         )}
 
         {/* Removido erro inferior para usar apenas modal no topo */}
 
         {result && showResult && (
-          <div className="overlay result-overlay">
-            <div className="result-modal">
-              <div className="result-modal-header">
-                <h2>Resultado da Análise</h2>
-                <button
-                  type="button"
-                  className="modal-close"
-                  aria-label="Fechar resultado"
-                  title="Fechar"
-                  onClick={() => { setShowResult(false); setResult(null); setFile(null); setPreview(null); }}
-                >
-                  ×
-                </button>
-              </div>
+          <section className="result-modal fade-in">
+            <div className="result-modal-header">
+              <h2>Resultado da Análise</h2>
+            </div>
 
               <div
                 className={
@@ -249,9 +239,22 @@ function App() {
                 </div>
               )}
 
-              {/* Botão “Nova Análise” removido conforme solicitação */}
-            </div>
-          </div>
+              <div className="result-modal-actions">
+                <button
+                  type="button"
+                  className="new-analysis"
+                  onClick={() => { setShowResult(false); setResult(null); setFile(null); setPreview(null); setShowAnalysis(false); }}
+                >
+                  <span className="new-analysis-icon" aria-hidden="true">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M4 7h3l2-2h6l2 2h3v12H4V7zm8 2a5 5 0 110 10 5 5 0 010-10z" />
+                      <circle cx="12" cy="14" r="3" />
+                    </svg>
+                  </span>
+                  <span>Nova Análise</span>
+                </button>
+              </div>
+          </section>
         )}
       </main>
       {showErrorModal && (
@@ -263,36 +266,34 @@ function App() {
         </div>
       )}
       {analyzing && (
-        <div className="overlay">
-          <div className="modal">
-            <h2 className="modal-title">Analisando Mercado</h2>
-            <p className="modal-sub">Nosso algoritmo está processando os dados para sua operação</p>
-            {[
-              'IA analisando padrões complexos...',
-              'Algoritmos processando dados...',
-              'Rede neural deep learning...',
-              'IA gerando predições avançadas...'
-            ].map((label, i) => {
-              const start = i * 25
-              const end = start + 25
-              const w = Math.max(0, Math.min(progress - start, 25)) / 25 * 100
-              const done = progress >= end
-              const colorClass = ['teal', 'purple', 'orange', 'pink'][i]
-              return (
-                <div className="step" key={i}>
-                  <div className="step-head">
-                    <span>{label}</span>
-                    {done && <span className="check">✓</span>}
-                  </div>
-                  <div className="progress-bar">
-                    <div className={`progress-fill ${colorClass}`} style={{ width: `${w}%` }} />
-                  </div>
+        <section className="card analyzing-card fade-in" aria-live="polite">
+          <h2 className="modal-title">Analisando Mercado</h2>
+          <p className="modal-sub">Nosso algoritmo está processando os dados para sua operação</p>
+          {[
+            'IA analisando padrões complexos...',
+            'Algoritmos processando dados...',
+            'Rede neural deep learning...',
+            'IA gerando predições avançadas...'
+          ].map((label, i) => {
+            const start = i * 25
+            const end = start + 25
+            const w = Math.max(0, Math.min(progress - start, 25)) / 25 * 100
+            const done = progress >= end
+            const colorClass = ['teal', 'purple', 'orange', 'pink'][i]
+            return (
+              <div className="step" key={i}>
+                <div className="step-head">
+                  <span>{label}</span>
+                  {done && <span className="check">✓</span>}
                 </div>
-              )
-            })}
-            <div className="overall">Processando {progress}%</div>
-          </div>
-        </div>
+                <div className="progress-bar">
+                  <div className={`progress-fill ${colorClass}`} style={{ width: `${w}%` }} />
+                </div>
+              </div>
+            )
+          })}
+          <div className="overall">Processando {progress}%</div>
+        </section>
       )}
     </div>
   )
