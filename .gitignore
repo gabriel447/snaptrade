@@ -1,5 +1,7 @@
 # Dependências
-node_modules/
+api/node_modules/
+web/node_modules/
 
 # Variáveis de ambiente
-.env
+api/.env
+web/.env

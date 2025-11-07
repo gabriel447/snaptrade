@@ -1,6 +1,18 @@
 # SnapTrade Vision API
 
-API em Node.js que recebe imagens de gráficos de candles (base64), analisa padrões via OpenAI Vision e retorna sinal de trading para operações de 1 minuto.
+Monorepo com duas aplicações:
+
+- `api/`: servidor Express para análise de gráficos de candles (Vision), com autenticação por token e CORS.
+- `web/`: frontend React para envio de imagem e exibição do sinal (aposta para baixo ou para cima).
+
+## Como usar
+1. Configure `api/.env` (inclua `OPENAI_API_KEY` e `API_TOKEN`).
+2. Rode a API: `cd api && npm install && npm start`.
+3. Configure `web/.env` (inclua `VITE_API_BASE_URL` e `VITE_API_TOKEN`).
+4. Rode o frontend: `cd web && npm install && npm run dev`.
+
+Abra o frontend e envie a imagem; o resultado mostra se deve apostar para baixo (VENDER) ou para cima (COMPRAR), ou aguardar.
+
 
 ## Requisitos
 - Node.js >= 18

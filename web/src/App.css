@@ -1,0 +1,91 @@
+:root { color-scheme: dark; --gutter: clamp(12px, 4vw, 36px); --content-max: 1200px; --narrow-max: 720px; }
+
+/* Página base */
+.page {
+  min-height: 100vh;
+  padding: 0;
+  background: #0b0f14;
+  color: #e5e7eb;
+}
+
+.hero { text-align: center; padding: 60px var(--gutter) 16px; background: linear-gradient(180deg, rgba(16,185,129,0.10), rgba(16,185,129,0)); }
+.title { font-size: 1.7rem; font-weight: 700; letter-spacing: 0.2px; }
+.subtitle { font-size: 0.95rem; color: #9ca3af; }
+
+.content { width: 100%; margin: 0 auto; padding-inline: var(--gutter); display: grid; gap: 16px; }
+.content > * { width: min(100%, var(--content-max)); margin-inline: auto; }
+/* Removido wrapper de centralização vertical */
+
+/* Card genérico */
+.card {
+  background: #11161c;
+  border: 1px solid #1f2937;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  padding: 16px;
+  width: 100%;
+}
+
+/* Seletor de arquivo estilo card */
+.file-input { display: none; }
+.picker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 14px;
+  border-radius: 12px;
+  background: #111827;
+  border: 2px dashed rgba(255, 255, 255, 0.7);
+}
+.picker:hover { filter: brightness(1.06); }
+.picker:focus, .picker:focus-visible { outline: none; }
+.picker-icon { font-size: 1.8rem; }
+.picker-text h2 { margin: 0; font-size: 1.1rem; }
+.hint { display: block; color: #9ca3af; font-size: 0.9rem; }
+.filename { display: block; margin-top: 6px; color: #cbd5e1; font-size: 0.85rem; }
+
+.preview { margin-top: 12px; }
+.preview img { width: 100%; display: block; border-radius: 12px; border: 1px solid #1f2937; }
+
+/* Botão primário */
+.primary {
+  width: 100%;
+  padding: 16px 20px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #0b0f14;
+  background: linear-gradient(90deg, #10b981, #059669);
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.25);
+}
+.primary:hover { filter: brightness(1.06); }
+.primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.result { }
+.error { color: #f43f5e; }
+
+/* Desktop refinamentos */
+@media (min-width: 768px) {
+  .title { font-size: 2rem; }
+  .subtitle { font-size: 1rem; }
+}
+@media (min-width: 1024px) {
+  /* No desktop, estreitar input/card e destacar botão */
+  .upload-card, .primary { width: min(100%, var(--narrow-max)); }
+  /* Botão maior no desktop */
+  .primary { font-size: 1.25rem; }
+}
+
+/* Mobile refinamentos */
+@media (max-width: 640px) {
+  /* reduzir largura e criar espaço lateral extra */
+  .upload-card, .primary { width: calc(100% - 2 * var(--gutter)); margin-inline: var(--gutter); }
+  .picker { padding: 12px; }
+  .primary { padding: 14px 18px; font-size: 1.1rem; }
+}
+
+/* Espaçamento entre título e seletor */
+.upload-card { margin-top: 0; background: transparent; border: none; box-shadow: none; padding: 0; }
+.upload-card .picker { border-radius: 12px; }

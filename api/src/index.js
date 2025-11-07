@@ -1,7 +1,13 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+dotenv.config({ path: resolve(__dirname, '../.env') });
 import express from 'express';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import cors from 'cors';
 import logger, { httpLogger } from './logger.js';
 import { analyzeBodySchema, validateAndDecodeImage, openAIResultSchema } from './validators.js';
 import { getOpenAIClient, analyzeCandlesWithVision } from './openaiClient.js';
@@ -11,6 +17,14 @@ const app = express();
 
 // Segurança e parsing
 app.use(helmet());
+const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['*'];
+app.use(cors({
+  origin: allowedOrigins,
+  methods: ['POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Token'],
+  optionsSuccessStatus: 204,
+  preflightContinue: false
+}));
 app.use(express.json({ limit: process.env.REQUEST_LIMIT || '6mb' }));
 app.use(httpLogger);
 
@@ -31,10 +45,16 @@ const tokenLimiter = rateLimit({
   message: { error: 'Limite de requisições excedido' }
 });
 
-// Todas as rotas exigem token
-app.use(authMiddleware);
-// Aplica rate limit por token após autenticação
-app.use(tokenLimiter);
+// Todas as rotas (exceto OPTIONS) exigem token
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') return next();
+  return authMiddleware(req, res, next);
+});
+// Aplica rate limit por token após autenticação (exceto OPTIONS)
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') return next();
+  return tokenLimiter(req, res, next);
+});
 
 // Endpoint principal
 app.post('/analyze', async (req, res, next) => {
